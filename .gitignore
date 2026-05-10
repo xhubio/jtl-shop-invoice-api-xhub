@@ -2,9 +2,3 @@
 /composer.lock
 .DS_Store
 *.bak
-
-# Runtime-generated invoice files — created by InvoiceFileStorage at runtime,
-# never tracked. The empty directory is preserved via files/.gitkeep so the
-# storage path exists on a fresh checkout.
-/files/*
-!/files/.gitkeep
