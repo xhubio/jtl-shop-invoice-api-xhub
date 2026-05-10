@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jtlshopplugin>
+    <Name>Invoice-api xhub for JTL-Shop</Name>
+    <Description>Generate compliant e-invoices from JTL-Shop orders via the invoice-api.xhub.io API. Live now: PDF, XRechnung, ZUGFeRD.</Description>
+    <Author>xhub.io / BeeBack UG</Author>
+    <URL>https://invoice-api.xhub.io</URL>
+    <XMLVersion>100</XMLVersion>
+    <APIVersion>5</APIVersion>
+    <ShopVersion>5.2.0</ShopVersion>
+    <PluginID>xhubio_invoice_api_xhub</PluginID>
+    <Version>1.0.0</Version>
+    <CreateDate>2026-05-09</CreateDate>
+    <Icon>logo.png</Icon>
+    <License>MIT</License>
+
+    <Descriptions>
+        <Description language="ger">E-Rechnungen aus JTL-Shop-Bestellungen ueber die invoice-api.xhub.io API erzeugen. Aktuell live: PDF, XRechnung, ZUGFeRD.</Description>
+        <Description language="eng">Generate compliant e-invoices from JTL-Shop orders via the invoice-api.xhub.io API. Live now: PDF, XRechnung, ZUGFeRD.</Description>
+    </Descriptions>
+
+    <PluginBootstrap>Bootstrap.php</PluginBootstrap>
+
+    <Install>
+        <!--
+            Hook 181 = HOOK_BESTELLUNGEN_XML_BESTELLSTATUS — verified against the
+            official JTL-Shop V5 hook list (2026-05-09). Fires before the order
+            status is updated; payload: array{ status: int (by-ref), oBestellung: stdClass }.
+            See ../docs/HOOK-ID-VERIFICATION.md for the full verification record.
+            Listener priority defaults to 5 (lower = earlier execution).
+        -->
+        <Hooks>
+            <!-- Path is relative to plugin's frontend/ subdirectory per JTL convention. -->
+            <Hook id="181" priority="5">Hooks/OrderStatusChangedHook.php</Hook>
+        </Hooks>
+
+        <Adminmenu>
+            <Customlink sort="1">
+                <Name>Invoice-api xhub Settings</Name>
+                <Filename>settings.php</Filename>
+            </Customlink>
+            <Settingslink sort="2">
+                <Name>Invoice-api xhub Configuration</Name>
+
+                <Setting type="text" conf="Y" initialValue="" sort="11">
+            <Name>API key</Name>
+            <Description>Generate at https://console.invoice-api.xhub.io/api-keys. The key is used as a Bearer token for every API call.</Description>
+            <ValueName>apiKey</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="https://service.invoice-api.xhub.io" sort="12">
+            <Name>API base URL</Name>
+            <Description>Default https://service.invoice-api.xhub.io. Only change for staging or self-hosted deployments.</Description>
+            <ValueName>baseUrl</ValueName>
+        </Setting>
+
+        <!-- Document defaults -->
+        <Setting type="selectbox" conf="Y" initialValue="DE" sort="20">
+            <Name>Country</Name>
+            <Description>Country profile used for the generated e-invoice. Determines validation rules and country-specific fields.</Description>
+            <ValueName>country</ValueName>
+            <SelectboxOptions>
+                <Option sort="1" value="DE">Germany (DE)</Option>
+                <Option sort="2" value="AT">Austria (AT)</Option>
+                <Option sort="3" value="FR">France (FR)</Option>
+                <Option sort="4" value="IT">Italy (IT)</Option>
+                <Option sort="5" value="ES">Spain (ES)</Option>
+                <Option sort="6" value="BE">Belgium (BE)</Option>
+                <Option sort="7" value="NL">Netherlands (NL)</Option>
+                <Option sort="8" value="BG">Bulgaria (BG)</Option>
+                <Option sort="9" value="RO">Romania (RO)</Option>
+                <Option sort="10" value="CZ">Czech Republic (CZ)</Option>
+                <Option sort="11" value="HU">Hungary (HU)</Option>
+            </SelectboxOptions>
+        </Setting>
+
+        <Setting type="selectbox" conf="Y" initialValue="xrechnung" sort="21">
+            <Name>Format</Name>
+            <Description>Currently 3 e-invoice formats can be generated: PDF, XRechnung, ZUGFeRD. Additional formats (Factur-X, FatturaPA, Facturae, ebInterface, UBL, ISDOC, NAV) follow from Q3 2026 onwards and will appear automatically once the backend supports them.</Description>
+            <ValueName>format</ValueName>
+            <SelectboxOptions>
+                <Option sort="1" value="pdf">PDF</Option>
+                <Option sort="2" value="xrechnung">XRechnung (DE)</Option>
+                <Option sort="3" value="zugferd">ZUGFeRD (DE/AT)</Option>
+            </SelectboxOptions>
+        </Setting>
+
+        <Setting type="selectbox" conf="Y" initialValue="on_completed" sort="22">
+            <Name>Trigger</Name>
+            <Description>Pick the order state that should trigger invoice generation. Stripe / PayPal / instant-pay -> processing or completed. Advance bank transfer -> on hold so the customer receives the invoice with bank details before paying. For mixed payment methods, completed is the safest compromise.</Description>
+            <ValueName>trigger</ValueName>
+            <SelectboxOptions>
+                <Option sort="1" value="off">Off (manual only)</Option>
+                <Option sort="2" value="on_pending">When order is pending (rare - pre-invoice flow)</Option>
+                <Option sort="3" value="on_on_hold">When order is on hold (advance payment with bank details)</Option>
+                <Option sort="4" value="on_processing">When order goes to processing (Stripe / PayPal / instant-pay)</Option>
+                <Option sort="5" value="on_completed">When order is completed (default - invoice on shipment)</Option>
+            </SelectboxOptions>
+        </Setting>
+
+        <Setting type="radio" conf="Y" initialValue="Y" sort="23">
+            <Name>Attach invoice to customer email</Name>
+            <Description>When enabled, the generated invoice is attached to the order confirmation / status-change email sent by JTL-Shop.</Description>
+            <ValueName>attachToEmail</ValueName>
+            <RadioOptions>
+                <Option sort="1" value="Y">Yes</Option>
+                <Option sort="2" value="N">No</Option>
+            </RadioOptions>
+        </Setting>
+
+        <Setting type="number" conf="Y" initialValue="14" sort="24">
+            <Name>Payment due (days)</Name>
+            <Description>Number of days from the invoice date until the payment due date. Default 14.</Description>
+            <ValueName>paymentDueDays</ValueName>
+        </Setting>
+
+        <!-- Invoice numbering -->
+        <Setting type="text" conf="Y" initialValue="INV-{order_number}" sort="30">
+            <Name>Number format</Name>
+            <Description>Format string for the invoice number. Tokens: {order_number}, {order_id}, {year}, {month}, {day}, {seq}, {seq:0000}. For Section 14 UStG (DE) compliance use {seq} or {seq:0000} - the plugin tracks a separate sequential counter that is uniquely incremented per generated invoice. Example: 2026-{seq:0000} -> 2026-0001, 2026-0002.</Description>
+            <ValueName>numberFormat</ValueName>
+        </Setting>
+
+        <Setting type="selectbox" conf="Y" initialValue="yearly" sort="31">
+            <Name>Sequence reset</Name>
+            <Description>Determines when the {seq} counter resets. Yearly is recommended and aligns with most accounting practices.</Description>
+            <ValueName>sequenceReset</ValueName>
+            <SelectboxOptions>
+                <Option sort="1" value="yearly">Yearly (recommended)</Option>
+                <Option sort="2" value="monthly">Monthly</Option>
+                <Option sort="3" value="never">Never (continuous counter)</Option>
+            </SelectboxOptions>
+        </Setting>
+
+        <!-- Seller -->
+        <Setting type="text" conf="Y" initialValue="" sort="40">
+            <Name>Company name</Name>
+            <Description>Legal company name as it should appear on the invoice header.</Description>
+            <ValueName>sellerName</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="41">
+            <Name>VAT ID</Name>
+            <Description>EU VAT identification number (e.g. DE123456789). Required for cross-border B2B invoices.</Description>
+            <ValueName>sellerVatId</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="42">
+            <Name>Street</Name>
+            <Description>Street and house number of your business address.</Description>
+            <ValueName>sellerStreet</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="43">
+            <Name>Postal code</Name>
+            <Description>Postal/ZIP code of your business address.</Description>
+            <ValueName>sellerPostalCode</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="44">
+            <Name>City</Name>
+            <Description>City of your business address.</Description>
+            <ValueName>sellerCity</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="DE" sort="45">
+            <Name>Country code (ISO 3166-1 alpha-2)</Name>
+            <Description>Two-letter ISO country code of your business address (e.g. DE, AT, CH).</Description>
+            <ValueName>sellerCountryCode</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="46">
+            <Name>Email</Name>
+            <Description>Business email shown on the invoice for queries and remittance.</Description>
+            <ValueName>sellerEmail</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="47">
+            <Name>Phone</Name>
+            <Description>Required by some country profiles (e.g. XRechnung B2G). Format: +49 30 1234567 - international notation recommended.</Description>
+            <ValueName>sellerPhone</ValueName>
+        </Setting>
+
+        <!-- Bank -->
+        <Setting type="text" conf="Y" initialValue="" sort="50">
+            <Name>IBAN</Name>
+            <Description>Optional. Used for advance bank transfer so the customer receives the invoice with IBAN and BIC. If left empty, the plugin tries to read these from the active JTL-Shop payment methods.</Description>
+            <ValueName>sellerIban</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="51">
+            <Name>BIC</Name>
+            <Description>Bank Identifier Code (SWIFT). Required alongside IBAN for international transfers.</Description>
+            <ValueName>sellerBic</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="52">
+            <Name>Bank name</Name>
+            <Description>Name of the bank as it should appear on the invoice payment block.</Description>
+            <ValueName>sellerBankName</ValueName>
+        </Setting>
+
+        <Setting type="text" conf="Y" initialValue="" sort="53">
+            <Name>Account holder</Name>
+            <Description>Name of the account holder. Often identical to the company name; provide explicitly if it differs.</Description>
+            <ValueName>sellerAccountHolder</ValueName>
+        </Setting>
+
+        <!-- Country specific (DE) -->
+        <Setting type="text" conf="Y" initialValue="" sort="60">
+            <Name>Default Leitweg-ID</Name>
+            <Description>Used by XRechnung for B2G (public sector). Format 991-12345-67. Leave empty for B2B - the order number is then used as buyer reference.</Description>
+            <ValueName>defaultLeitwegId</ValueName>
+        </Setting>
+
+        <!-- Template -->
+        <Setting type="text" conf="Y" initialValue="" sort="70">
+            <Name>Default Template-ID</Name>
+            <Description>Optional. Leave empty to use the standard invoice template provided by invoice-api.xhub.io. To use your own template (logo, layout, colors, content blocks), create one at https://console.invoice-api.xhub.io/pdf/templates and paste its UUID here. Templates are format-specific - a template designed for XRechnung will not work for ZUGFeRD or PDF.</Description>
+            <ValueName>templateId</ValueName>
+        </Setting>
+
+            </Settingslink>
+        </Adminmenu>
+    </Install>
+</jtlshopplugin>

@@ -1,0 +1,21 @@
+{
+    "name": "xhubio/jtl-shop-invoice-api-xhub",
+    "description": "Generate compliant e-invoices from JTL-Shop orders via invoice-api.xhub.io. Live now: PDF, XRechnung, ZUGFeRD. Coming Q3 2026: Factur-X, FatturaPA, Facturae, ebInterface, UBL, ISDOC, NAV.",
+    "type": "jtl-shop-plugin",
+    "license": "MIT",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "invoice-api.xhub.io - A Digital Service by BeeBack UG",
+            "homepage": "https://invoice-api.xhub.io"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Plugin\\xhubio_invoice_api_xhub\\": "src/"
+        }
+    }
+}
