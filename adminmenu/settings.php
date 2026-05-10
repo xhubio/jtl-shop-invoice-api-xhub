@@ -551,7 +551,7 @@ $renderValue = static function (string $key, $value, array $opts) use ($badgeMis
             <strong>Troubleshoot:</strong> Generation failures appear with the full
             API error message in the &ldquo;Generated invoices&rdquo; history above
             (red &ldquo;Error&rdquo; badge, hover for details). For unresolved issues
-            email <a href="mailto:support@invoice-api.xhub.io">support@invoice-api.xhub.io</a>
+            email <a href="mailto:support.invoice-api@xhub.io">support.invoice-api@xhub.io</a>
             with the order ID + the error string.
         </p>
         <p class="small text-muted mb-0">
