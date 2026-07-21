@@ -28,9 +28,9 @@ erzeugt werden.
 
 ## Installation
 
-1. Laden Sie `jtl-shop-invoice-api-xhub-1.0.0.zip` herunter
-   (öffentliches Release in Vorbereitung — wenden Sie sich für einen
-   frühen Zugang an support@invoice-api.xhub.io).
+1. Laden Sie `jtl-shop-invoice-api-xhub-1.0.0.zip` vom
+   [aktuellen GitHub-Release](https://github.com/xhubio/jtl-shop-invoice-api-xhub/releases/latest)
+   herunter.
 2. JTL-Shop-Admin → **Plugins → Plugin-Manager → Reiter "Verfügbar"**
    → **Plugin-ZIP hochladen** → ZIP auswählen.
 3. Wechseln Sie zum Reiter **"Aktiviert"** → Plugin aktivieren.
@@ -130,7 +130,7 @@ die Gesamtanzahl Rechnungen und den Zeitpunkt der letzten Erzeugung.
 
 - **API-Console:** [console.invoice-api.xhub.io](https://console.invoice-api.xhub.io)
 - **E-Mail:** support@invoice-api.xhub.io
-- **Plugin-Quellen / Issues:** öffentliches Release in Vorbereitung
+- **Plugin-Quellen / Issues:** [github.com/xhubio/jtl-shop-invoice-api-xhub](https://github.com/xhubio/jtl-shop-invoice-api-xhub)
 
 ## Lizenz
 

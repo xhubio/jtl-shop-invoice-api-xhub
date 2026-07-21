@@ -27,8 +27,8 @@ generated manually for any order from the plugin's admin Settings tab.
 
 ## Install
 
-1. Download `jtl-shop-invoice-api-xhub-1.0.0.zip` (public release pending —
-   contact support@invoice-api.xhub.io for early access).
+1. Download `jtl-shop-invoice-api-xhub-1.0.0.zip` from the
+   [latest GitHub release](https://github.com/xhubio/jtl-shop-invoice-api-xhub/releases/latest).
 2. JTL-Shop admin → **Plugins → Plugin-Manager → "Verfügbar"** tab
    → **Plugin-ZIP hochladen** → upload the ZIP.
 3. Switch to the **"Aktiviert"** tab → toggle the plugin on.
@@ -121,7 +121,7 @@ total invoice count, and the most-recent generation timestamp.
 
 - **API console:** [console.invoice-api.xhub.io](https://console.invoice-api.xhub.io)
 - **Email:** support@invoice-api.xhub.io
-- **Plugin source / issues:** public release pending
+- **Plugin source / issues:** [github.com/xhubio/jtl-shop-invoice-api-xhub](https://github.com/xhubio/jtl-shop-invoice-api-xhub)
 
 ## License
 
